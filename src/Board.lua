@@ -13,15 +13,15 @@
 
 Board = Class{}
 
-function Board:init(x, y)
+function Board:init(x, y, level)
     self.x = x
     self.y = y
     self.matches = {}
 
-    self:initializeTiles()
+    self:initializeTiles(level)
 end
 
-function Board:initializeTiles()
+function Board:initializeTiles(level)
     self.tiles = {}
 
     for tileY = 1, 8 do
@@ -31,8 +31,8 @@ function Board:initializeTiles()
 
         for tileX = 1, 8 do
             
-            -- create a new tile at X,Y with a random color and variety
-            table.insert(self.tiles[tileY], Tile(tileX, tileY, math.random(18), math.random(6)))
+            -- create a new tile at X,Y with a random color, and variety based on game level
+            table.insert(self.tiles[tileY], Tile(tileX, tileY, math.random(18), math.random(1, level)))
         end
     end
 
@@ -40,7 +40,7 @@ function Board:initializeTiles()
         
         -- recursively initialize if matches were returned so we always have
         -- a matchless board on start
-        self:initializeTiles()
+        self:initializeTiles(level)
     end
 end
 
@@ -179,7 +179,7 @@ end
     Shifts down all of the tiles that now have spaces below them, then returns a table that
     contains tweening information for these new tiles.
 ]]
-function Board:getFallingTiles()
+function Board:getFallingTiles(level)
     -- tween table, with tiles as keys and their x and y as the to values
     local tweens = {}
 
@@ -239,8 +239,8 @@ function Board:getFallingTiles()
             -- if the tile is nil, we need to add a new one
             if not tile then
 
-                -- new tile with random color and variety
-                local tile = Tile(x, y, math.random(18), math.random(6))
+                -- new tile with a random color, and variety based on game level
+                local tile = Tile(x, y, math.random(18), math.random(1, level))
                 tile.y = -32
                 self.tiles[y][x] = tile
 

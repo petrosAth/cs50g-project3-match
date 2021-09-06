@@ -193,17 +193,19 @@ function PlayState:calculateMatches()
         gSounds['match']:stop()
         gSounds['match']:play()
 
-        -- add score for each match
+        -- calculate score based on tile variety level, and add 1 second of play time for every match
         for k, match in pairs(matches) do
-            self.score = self.score + #match * 50
-            self.timer = self.timer + #match
+            for l, tile in pairs(match) do
+                self.score = self.score + tile.variety * 100
+                self.timer = self.timer + #match
+            end
         end
 
         -- remove any tiles that matched from the board, making empty spaces
         self.board:removeMatches()
 
         -- gets a table with tween values for tiles that should now fall
-        local tilesToFall = self.board:getFallingTiles()
+        local tilesToFall = self.board:getFallingTiles(self.level)
 
         -- tween new tiles that spawn from the ceiling over 0.25s to fill in
         -- the new upper gaps that exist
