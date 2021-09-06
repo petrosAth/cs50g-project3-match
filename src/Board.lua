@@ -30,9 +30,10 @@ function Board:initializeTiles(level)
         table.insert(self.tiles, {})
 
         for tileX = 1, 8 do
+            local tileColor = { 1, 4, 7, 8, 11, 12, 14, 17 }
             
             -- create a new tile at X,Y with a random color, and variety based on game level
-            table.insert(self.tiles[tileY], Tile(tileX, tileY, math.random(18), math.random(1, level)))
+            table.insert(self.tiles[tileY], Tile(tileX, tileY, tileColor[math.random(8)], math.random(1, level), math.random(100)))
         end
     end
 
@@ -238,9 +239,10 @@ function Board:getFallingTiles(level)
 
             -- if the tile is nil, we need to add a new one
             if not tile then
+                local tileColor = { 1, 4, 7, 8, 11, 12, 14, 17 }
 
                 -- new tile with a random color, and variety based on game level
-                local tile = Tile(x, y, math.random(18), math.random(1, level))
+                local tile = Tile(x, y, tileColor[math.random(8)], math.random(1, level), math.random(100))
                 tile.y = -32
                 self.tiles[y][x] = tile
 
