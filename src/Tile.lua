@@ -44,15 +44,18 @@ function Tile:render(x, y)
     -- draw shiny
     if self.shiny > 90 then
         love.graphics.setColor(1, 1, 1, 60/255)
-
-        for i = 0, 1 do
+        
+        -- horizontal rectangles
+        for i = 0, 3 do
             love.graphics.rectangle('fill', (self.gridX - 1) * 32 + (VIRTUAL_WIDTH - 272),
-        (self.gridY - 1) * 32 + 24 + i * 12, 32, 4, 4)
+                (self.gridY - 1) * 32 + 23 + i * 5, 32, 3, 3)
         end
+
         --[[
-        for i = 0, 2 do
-            love.graphics.rectangle('fill', (self.gridX - 1) * 32 + (VIRTUAL_WIDTH - 272),
-        (self.gridY - 1) * 32 + 24 + i * 6, 32, 4, 4)
+        -- vertical rectangles
+        for i = 0, 3 do
+            love.graphics.rectangle('fill', (self.gridX - 1) * 32 + (VIRTUAL_WIDTH - 272) + 7 + i * 5,
+                (self.gridY - 1) * 32 + 16, 3, 32, 3)
         end
         ]]
     end
