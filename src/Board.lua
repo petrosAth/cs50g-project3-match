@@ -34,16 +34,7 @@ function Board:initializeTiles(level)
             local tileColor = { 1, 4, 7, 8, 11, 12, 14, 17 }
 
             -- chance to give a tile the shiny flag / line destruction property
-            local shiny = math.random(100)
-            shiny = shiny > 80 and 1 or 0
-
-            --[[
-            -- for future addition of vertical and both horizontal and vertical line destruction tiles
-            if shiny then
-                shiny = (shiny > 0 and shiny < 95) and math.random(2) or shiny
-                shiny = shiny >= 95 and 3 or shiny
-            end
-            ]]
+            local shiny = math.random(100) > 80 and true or false
             
             -- create a new tile at X,Y with a random color, rancom variety based on game level, and shiny flag
             table.insert(self.tiles[tileY], Tile(tileX, tileY, tileColor[math.random(8)], math.random(1, math.min(level, 6)), shiny))
@@ -97,15 +88,15 @@ function Board:calculateMatches()
                     for x2 = x - 1, x - matchNum, -1 do
                         
                         -- search each tile in that match for shiny flag
-                        if self.tiles[y][x2].shiny == 1 then
+                        if self.tiles[y][x2].shiny then
                             lineBreaker = true
                         end
                     end
 
                     -- if there is a line breaker in the matched tiles, add the line to our matches table
-                    if lineBreaker == true then
-                        for s = 1, 8 do
-                            table.insert(match, self.tiles[y][s])
+                    if lineBreaker then
+                        for x2 = 1, 8 do
+                            table.insert(match, self.tiles[y][x2])
                         end
                     else
                         -- go backwards from here by matchNum
@@ -139,15 +130,15 @@ function Board:calculateMatches()
             for x = 8, 8 - matchNum + 1, -1 do
                         
                 -- search each tile in that match for shiny flag
-                if self.tiles[y][x].shiny == 1 then
+                if self.tiles[y][x].shiny then
                     lineBreaker = true
                 end
             end
 
             -- if there is a line breaker in the matched tiles, add the line to our matches table
-            if lineBreaker == true then
-                for s = 1, 8 do
-                    table.insert(match, self.tiles[y][s])
+            if lineBreaker then
+                for x = 1, 8 do
+                    table.insert(match, self.tiles[y][x])
                 end
             else
                 -- go backwards from end of last row by matchNum
@@ -179,9 +170,9 @@ function Board:calculateMatches()
                     for y2 = y - 1, y - matchNum, -1 do
                         table.insert(match, self.tiles[y2][x])
 
-                        if self.tiles[y2][x].shiny == 1 then
-                            for s = 1, 8 do
-                                table.insert(match, self.tiles[y2][s])
+                        if self.tiles[y2][x].shiny then
+                            for x2 = 1, 8 do
+                                table.insert(match, self.tiles[y2][x2])
                             end
                         end
                     end
@@ -206,9 +197,9 @@ function Board:calculateMatches()
             for y = 8, 8 - matchNum + 1, -1 do
                 table.insert(match, self.tiles[y][x])
 
-                if self.tiles[y][x].shiny == 1 then
-                    for s = 1, 8 do
-                        table.insert(match, self.tiles[y][s])
+                if self.tiles[y][x].shiny then
+                    for x2 = 1, 8 do
+                        table.insert(match, self.tiles[y][x2])
                     end
                 end
             end
@@ -305,8 +296,7 @@ function Board:getFallingTiles(level)
                 local tileColor = { 1, 4, 7, 8, 11, 12, 14, 17 }
     
                 -- chance to give a tile the shiny flag / line destruction property
-                local shiny = math.random(100)
-                shiny = shiny > 80 and 1 or 0
+                local shiny = math.random(100) > 80 and true or false
 
                 -- new tile with a random color, and variety based on game level
                 local tile = Tile(x, y, tileColor[math.random(8)], math.random(1, math.min(level, 6)), shiny)

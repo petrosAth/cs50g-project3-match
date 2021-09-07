@@ -42,23 +42,13 @@ function Tile:render(x, y)
         self.x + x, self.y + y)
 
     -- draw shiny
-    if self.shiny > 0 then
+    if self.shiny then
         love.graphics.setColor(1, 1, 1, 0.25)
-        
-        -- horizontal rectangles
-        if self.shiny ~= 2 then
-            for i = 0, 3 do
-                love.graphics.rectangle('fill', (self.gridX - 1) * 32 + (VIRTUAL_WIDTH - 272),
-                    (self.gridY - 1) * 32 + 23 + i * 5, 32, 3, 3)
-            end
-        end
 
-        -- vertical rectangles
-        if self.shiny ~= 1 then
-            for i = 0, 3 do
-                love.graphics.rectangle('fill', (self.gridX - 1) * 32 + (VIRTUAL_WIDTH - 272) + 7 + i * 5,
-                    (self.gridY - 1) * 32 + 16, 3, 32, 3)
-            end
+        -- draw 4 horizontal rectangles
+        for i = 0, 3 do
+            love.graphics.rectangle('fill', self.x + (VIRTUAL_WIDTH - 272),
+                self.y + 23 + i * 5, 32, 3, 3)
         end
     end
 end
