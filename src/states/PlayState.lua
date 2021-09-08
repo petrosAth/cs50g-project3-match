@@ -61,7 +61,7 @@ function PlayState:enter(params)
     self.level = params.level
 
     -- spawn a board and place it toward the right
-    self.board = params.board or Board(VIRTUAL_WIDTH - 272, 16)
+    self.board = params.board or Board(VIRTUAL_WIDTH - 272, 16, self.level)
 
     -- grab score from params if it was passed
     self.score = params.score or 0
@@ -104,6 +104,66 @@ function PlayState:update(dt)
             score = self.score
         })
     end
+    
+    -- make a copy of the board to check for possible matches
+    local tempBoard = self.board
+
+    -- flag to show if there are possible matches
+    local matchFound = false
+
+    -- check for possible matches
+    for y = 1, 8 do
+        local tempTile = tempBoard.tiles[1][1]
+        
+        for x = 1, 8 do
+            -- check for match by moving the tile right until we reach the last column
+            if x < 8 then
+                tempTile = tempBoard.tiles[x + 1][y]
+                tempBoard.tiles[x + 1][y] = tempBoard.tiles[x][y]
+                tempBoard.tiles[x][y] = tempTile
+
+                if tempBoard:calculateMatches() then
+                    matchFound = true
+                end
+
+                -- after checking return the tiles to their original positions
+                tempBoard.tiles[x][y] = tempBoard.tiles[x + 1][y]
+                tempBoard.tiles[x + 1][y] = tempTile
+            end
+
+            -- check for match by moving the tile down until we reach the last row
+            if y < 8 then
+                tempTile = tempBoard.tiles[x][y + 1]
+                tempBoard.tiles[x][y + 1] = tempBoard.tiles[x][y]
+                tempBoard.tiles[x][y] = tempTile
+
+                if tempBoard:calculateMatches() then
+                    matchFound = true
+                end
+
+                -- after checking return the tiles to their original positions
+                tempBoard.tiles[x][y] = tempBoard.tiles[x][y + 1]
+                tempBoard.tiles[x][y + 1] = tempTile
+            end
+        end
+
+        -- if we checked all the tiles of the last row and no matches found go back to start
+        if y == 8 and not matchFound then
+            -- if we just matched3 and we reached the score needed for the next level don't go back to start
+            -- even if there are no more matches
+            if self.score < self.scoreGoal then
+                Timer.clear()
+        
+                gSounds['game-over']:play()
+
+                gStateMachine:change('game-over', {
+                    score = self.score
+                })
+            end
+        end
+    end
+
+    tempBoard = {}
 
     if self.canInput then
         -- move cursor around based on bounds of grid, playing sounds
@@ -142,7 +202,7 @@ function PlayState:update(dt)
                 gSounds['error']:play()
                 self.highlightedTile = nil
             else
-                
+
                 -- swap grid positions of tiles
                 local tempX = self.highlightedTile.gridX
                 local tempY = self.highlightedTile.gridY
@@ -165,10 +225,39 @@ function PlayState:update(dt)
                     [self.highlightedTile] = {x = newTile.x, y = newTile.y},
                     [newTile] = {x = self.highlightedTile.x, y = self.highlightedTile.y}
                 })
-                
+
                 -- once the swap is finished, we can tween falling blocks as needed
                 :finish(function()
-                    self:calculateMatches()
+                    -- check for matches
+                    local matches = self.board:calculateMatches()
+
+                    -- if we have a match complete the swapping
+                    if matches then
+                        self:calculateMatches()
+                    -- else return the tiles in their original position and remove highlight
+                    else
+                        gSounds['error']:play()
+                        -- swap grid positions of tiles
+                        newTile.gridX = self.highlightedTile.gridX
+                        newTile.gridY = self.highlightedTile.gridY
+                        self.highlightedTile.gridX = tempX
+                        self.highlightedTile.gridY = tempY
+
+                        -- swap tiles in the tiles table
+                        self.board.tiles[self.highlightedTile.gridY][self.highlightedTile.gridX] = 
+                            self.highlightedTile
+
+                        self.board.tiles[newTile.gridY][newTile.gridX] = newTile
+
+                        -- tween coordinates between the two so they swap
+                        Timer.tween(0.1, {
+                            [self.highlightedTile] = {x = newTile.x, y = newTile.y},
+                            [newTile] = {x = self.highlightedTile.x, y = self.highlightedTile.y}
+                        })
+
+                        -- 
+                        self.highlightedTile = nil
+                    end
                 end)
             end
         end
@@ -188,7 +277,7 @@ function PlayState:calculateMatches()
 
     -- if we have any matches, remove them and tween the falling blocks that result
     local matches = self.board:calculateMatches()
-    
+
     if matches then
         gSounds['match']:stop()
         gSounds['match']:play()
@@ -210,12 +299,12 @@ function PlayState:calculateMatches()
         -- tween new tiles that spawn from the ceiling over 0.25s to fill in
         -- the new upper gaps that exist
         Timer.tween(0.25, tilesToFall):finish(function()
-            
+
             -- recursively call function in case new matches have been created
             -- as a result of falling blocks once new blocks have finished falling
             self:calculateMatches()
         end)
-    
+
     -- if no matches, we can continue playing
     else
         self.canInput = true
