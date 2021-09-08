@@ -78,6 +78,7 @@ function love.load()
 
     -- initialize input table
     love.keyboard.keysPressed = {}
+    love.mouse.buttonsPressed = {}
 end
 
 function love.resize(w, h)
@@ -98,6 +99,21 @@ function love.keyboard.wasPressed(key)
     end
 end
 
+function love.mousepressed(x, y, button, istouch, presses)
+    love.mouse.buttonsPressed[button] = true
+end
+
+function love.mouse.wasPressed(button)
+    --return love.mouse.buttonsPressed[button]
+    if love.mouse.buttonsPressed[button] then
+        love.mouse.buttonsPressed[button]= {}
+        love.mouse.buttonsPressed[button].x, love.mouse.buttonsPressed[button].y = love.mouse.getPosition()
+        return true
+    else
+        return false
+    end
+end
+
 function love.update(dt)
     
     -- scroll background, used across all states
@@ -111,6 +127,7 @@ function love.update(dt)
     gStateMachine:update(dt)
 
     love.keyboard.keysPressed = {}
+    love.mouse.buttonsPressed = {}
 end
 
 function love.draw()
@@ -118,7 +135,8 @@ function love.draw()
 
     -- scrolling background drawn behind every state
     love.graphics.draw(gTextures['background'], backgroundX, 0)
-    
+
     gStateMachine:render()
+    
     push:finish()
 end

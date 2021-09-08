@@ -181,6 +181,20 @@ function PlayState:update(dt)
             gSounds['select']:play()
         end
 
+        if love.mouse.wasPressed(1) then
+            gSounds['select']:play()
+            --[[
+            mouseX, mouseY = love.mouse.getPosition()
+            mouseX, mouseY = push:toGame(mouseX, mouseY)
+            ]]
+            mouseX, mouseY = push:toGame(love.mouse.buttonsPressed[1].x, love.mouse.buttonsPressed[1].y)
+            if mouseX < 240 or mouseX > 496 or mouseY < 16 or mouseY > 272 then
+                love.mouse.buttonsPressed = {}
+                mouseX = nil
+                mouseY = nil
+            end
+        end
+
         -- if we've pressed enter, to select or deselect a tile...
         if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') then
             
@@ -351,4 +365,19 @@ function PlayState:render()
     love.graphics.printf('Score: ' .. tostring(self.score), 20, 52, 182, 'center')
     love.graphics.printf('Goal : ' .. tostring(self.scoreGoal), 20, 80, 182, 'center')
     love.graphics.printf('Timer: ' .. tostring(self.timer), 20, 108, 182, 'center')
+
+    --[[
+    local mouseX, mouseY = love.mouse.getPosition()
+    mouseX, mouseY = push:toGame(mouseX, mouseY)
+]]
+    love.graphics.setColor(56/255, 56/255, 56/255, 234/255)
+    love.graphics.rectangle('fill', 16, VIRTUAL_HEIGHT - 132, 186, 116, 4)
+
+    love.graphics.setColor(255, 255, 255)
+    if mouseX and mouseY then love.graphics.circle("line", mouseX, mouseY, 10) end
+
+    love.graphics.setColor(99/255, 155/255, 1, 1)
+    love.graphics.setFont(gFonts['medium'])
+    love.graphics.printf("mouse x : " .. (mouseX or "outside"), 20, VIRTUAL_HEIGHT - 68, 182, "center")
+    love.graphics.printf("mouse y : " .. (mouseY or "outside"), 20, VIRTUAL_HEIGHT - 40, 182, "center")
 end
