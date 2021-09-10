@@ -44,11 +44,6 @@ VIRTUAL_HEIGHT = 288
 -- speed at which our background texture will scroll
 BACKGROUND_SCROLL_SPEED = 80
 
--- mouse cursor location
-MOUSE_ACTIVE = false
-MOUSE_X = 0
-MOUSE_Y = 0
-
 function love.load()
     
     -- window bar title
@@ -81,9 +76,9 @@ function love.load()
     -- keep track of scrolling our background on the X axis
     backgroundX = 0
 
-    -- initialize input table
+    -- initialize input tables
     love.keyboard.keysPressed = {}
-    love.mouse.buttonsPressed = {}
+    love.mouse.tracking = { btn = {}, mouseX = 0, mouseXold = 0, mouseY = 0, mouseYold = 0, mouseYnew = 0, active = false}
 end
 
 function love.resize(w, h)
@@ -105,20 +100,36 @@ function love.keyboard.wasPressed(key)
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
-    love.mouse.buttonsPressed[button] = true
+
+    -- add to our mouse tracking table
+    love.mouse.tracking.btn[button] = true
 end
 
-function love.mouse.wasPressed(button)
-    return love.mouse.buttonsPressed[button]
-    --[[
-    if love.mouse.buttonsPressed[button] then
-        love.mouse.buttonsPressed[button]= {}
-        love.mouse.buttonsPressed[button].x, love.mouse.buttonsPressed[button].y = love.mouse.getPosition()
-        return true
+function love.mouse.update(button)
+
+    -- translate x and y coordinates from real to virtual resolution
+    local mouseX, mouseY = push:toGame(love.mouse.getPosition())
+
+    -- convert x and y to multiples of 32 to use with our grid system
+    mouseX = math.floor((mouseX + 16) / 32) * 32
+    mouseY = math.floor((mouseY + 16) / 32) * 32
+    
+    -- insert coordinates to mouse tracking table
+    love.mouse.tracking.mouseX = mouseX
+    love.mouse.tracking.mouseY = mouseY
+
+    -- track mouse activity
+    if love.mouse.tracking.mouseXold == mouseX and love.mouse.tracking.mouseYold == mouseY then
+        love.mouse.tracking.active = false
     else
-        return false
+        love.mouse.tracking.active = true
     end
-    ]]
+
+    love.mouse.tracking.mouseXold = mouseX
+    love.mouse.tracking.mouseYold = mouseY
+
+    -- return true if a mouse button is pressed
+    return love.mouse.tracking.btn[button]
 end
 
 function love.update(dt)
@@ -131,22 +142,10 @@ function love.update(dt)
         backgroundX = 0
     end
 
-    -- track mouse cursor
-    MOUSE_X, MOUSE_Y = love.mouse.getPosition()
-    MOUSE_X, MOUSE_Y = push:toGame(MOUSE_X, MOUSE_Y)
-    MOUSE_X, MOUSE_Y = math.floor((MOUSE_X + 16) / 32) * 32, math.floor((MOUSE_Y + 16) / 32) * 32
-
-    -- stop returning cursor location while not over the tile area
-    if MOUSE_X > 240 and MOUSE_X < 496 and MOUSE_Y > 16 and MOUSE_Y < 272 then
-        MOUSE_ACTIVE = true
-    else
-        MOUSE_ACTIVE = false
-    end
-
     gStateMachine:update(dt)
 
     love.keyboard.keysPressed = {}
-    love.mouse.buttonsPressed = {}
+    love.mouse.tracking.btn = {}
 end
 
 function love.draw()

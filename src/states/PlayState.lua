@@ -71,6 +71,9 @@ function PlayState:enter(params)
 end
 
 function PlayState:update(dt)
+    -- update mouse cursor
+    love.mouse.update()
+
     if love.keyboard.wasPressed('escape') then
         love.event.quit()
     end
@@ -181,17 +184,19 @@ function PlayState:update(dt)
             gSounds['select']:play()
         end
 
-        if MOUSE_ACTIVE then
-            self.boardHighlightX = math.max(0, math.min((MOUSE_X - 256) / 32, 8))
-            self.boardHighlightY = math.max(0, math.min((MOUSE_Y - 32) / 32, 8))
+        -- move cursor using mouse only while mouse is active so we can still use the keyboard
+        -- even if mouse is hovering over a tile
+        if love.mouse.tracking.active then
+            self.boardHighlightX = math.max(0, math.min((love.mouse.tracking.mouseX - 256) / 32, 7))
+            self.boardHighlightY = math.max(0, math.min((love.mouse.tracking.mouseY - 32) / 32, 7))
 
-            if love.mouse.wasPressed(1) then
-                gSounds['select']:play()
-            end
+            -- play sound every time a different tile is highlighted
+            gSounds['select']:stop()
+            gSounds['select']:play()
         end
 
-        -- if we've pressed enter, to select or deselect a tile...
-        if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') or (MOUSE_ACTIVE and love.mouse.wasPressed(1)) then
+        -- if we've pressed enter or mouse clicked, to select or deselect a tile...
+        if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') or love.mouse.update(1) then
             
             -- if same tile as currently highlighted, deselect
             local x = self.boardHighlightX + 1
@@ -360,33 +365,4 @@ function PlayState:render()
     love.graphics.printf('Score: ' .. tostring(self.score), 20, 52, 182, 'center')
     love.graphics.printf('Goal : ' .. tostring(self.scoreGoal), 20, 80, 182, 'center')
     love.graphics.printf('Timer: ' .. tostring(self.timer), 20, 108, 182, 'center')
-
-    --[[
-    local mouseX, mouseY = love.mouse.getPosition()
-    mouseX, mouseY = push:toGame(mouseX, mouseY)
-]]
-    --[[
-    love.graphics.setColor(56/255, 56/255, 56/255, 234/255)
-    love.graphics.rectangle('fill', 16, VIRTUAL_HEIGHT - 132, 186, 116, 4)
-
-    love.graphics.setColor(255, 255, 255)
-    if mouseX and mouseY then love.graphics.circle("line", mouseX, mouseY, 10) end
-
-    love.graphics.setColor(99/255, 155/255, 1, 1)
-    love.graphics.setFont(gFonts['medium'])
-    love.graphics.printf("mouse x : " .. (mouseX or "outside"), 20, VIRTUAL_HEIGHT - 68, 182, "center")
-    love.graphics.printf("mouse y : " .. (mouseY or "outside"), 20, VIRTUAL_HEIGHT - 40, 182, "center")
-    ]]
-    
-    love.graphics.setColor(56/255, 56/255, 56/255, 234/255)
-    love.graphics.rectangle('fill', 16, VIRTUAL_HEIGHT - 132, 186, 116, 4)
-
-    love.graphics.setColor(255, 255, 255)
-    if MOUSE_X and MOUSE_Y then love.graphics.circle("line", MOUSE_X, MOUSE_Y, 10) end
-
-    love.graphics.setColor(99/255, 155/255, 1, 1)
-    love.graphics.setFont(gFonts['medium'])
-    love.graphics.printf("MOUSE_ACTIVE : " .. (tostring(MOUSE_ACTIVE) or "outside"), 20, VIRTUAL_HEIGHT - 96, 182, "center")
-    love.graphics.printf("MOUSE_X : " .. (MOUSE_X or "outside"), 20, VIRTUAL_HEIGHT - 68, 182, "center")
-    love.graphics.printf("MOUSE_y : " .. (MOUSE_Y or "outside"), 20, VIRTUAL_HEIGHT - 40, 182, "center")
 end
