@@ -87,7 +87,8 @@ function PlayState:update(dt)
         gSounds['game-over']:play()
 
         gStateMachine:change('game-over', {
-            score = self.score
+            score = self.score,
+            message = "Time is over!"
         })
     end
 
@@ -160,7 +161,8 @@ function PlayState:update(dt)
                 gSounds['game-over']:play()
 
                 gStateMachine:change('game-over', {
-                    score = self.score
+                    score = self.score,
+                    message = 'No more matches possible!'
                 })
             end
         end
